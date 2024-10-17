@@ -16,4 +16,16 @@ export class ConfigService {
   getJwtAccessTokenExpired(): string {
     return this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRED');
   }
+
+  getGSApiUrl(): string {
+    return this.configService.get<string>('GS_API_URL');
+  }
+
+  getGSOperatorCode(): string {
+    return this.configService.get<string>('GS_OPERATOR_CODE');
+  }
+
+  getGSSecretKey(): string {
+    return this.configService.get<string>('GS_SECRET_KEY');
+  }
 }

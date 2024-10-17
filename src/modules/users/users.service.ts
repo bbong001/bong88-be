@@ -5,21 +5,34 @@ import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { hashPassword } from '@/shared/utils/hash.util';
+import { GSService } from '@/common/services/gs/gs.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private readonly gsService: GSService,
+  ) {}
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
     try {
-      const { name, email, password, role, phoneNumber } = createUserDto;
-      const existingUser = await this.userModel.exists({ email });
-      if (existingUser) {
+      const { fullName, username, email, password, role, phoneNumber } = createUserDto;
+
+      const resGS = await this.gsService.createPlayer({ operatorcode: '', username: username, signature: '' });
+
+      const existingUserNameUser = await this.userModel.exists({ username });
+      if (existingUserNameUser) {
+        throw new ConflictException('Username already exists');
+      }
+
+      const existingPassWordUser = await this.userModel.exists({ email });
+      if (existingPassWordUser) {
         throw new ConflictException('Email already exists');
       }
 
       const hashedPassword = await hashPassword(password);
-      const newUser = new this.userModel({ name, email, password: hashedPassword, role, phoneNumber });
+      const newUser = new this.userModel({ username, fullName, email, password: hashedPassword, role, phoneNumber });
+
       return await newUser.save();
     } catch (error) {
       throw error;
