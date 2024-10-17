@@ -15,7 +15,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       data: null, // Không có dữ liệu khi xảy ra lỗi
       message: exception.message, // Sử dụng thông báo lỗi từ exception
       timestamp: new Date().toISOString(),
-      path: request.url,
+      // path: request.url,
     });
   }
 }

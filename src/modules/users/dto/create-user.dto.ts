@@ -8,7 +8,23 @@ export class CreateUserDto {
   })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  username: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    example: '*********',
+    required: true,
+  })
+  password: string;
+
+  @ApiProperty({
+    example: 'string',
+    required: true,
+  })
+  @IsString()
+  @IsNotEmpty()
+  fullName: string;
 
   @ApiProperty({
     example: 'xxx@gmail.com',
@@ -17,14 +33,6 @@ export class CreateUserDto {
   @IsEmail()
   @IsNotEmpty()
   email: string;
-
-  @ApiProperty({
-    example: '*********',
-    required: true,
-  })
-  @IsString()
-  @IsNotEmpty()
-  password: string;
 
   @ApiProperty({
     example: '0989898989',
@@ -42,7 +50,7 @@ export class CreateUserDto {
     example: `user | admin`,
   })
   @IsString()
-  role: string;
+  role?: string;
 
   @ApiProperty({
     example: 'string',

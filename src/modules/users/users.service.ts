@@ -4,22 +4,63 @@ import mongoose, { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { hashPassword } from '@/shared/utils/hash.util';
+import { hashMD5, hashPassword } from '@/shared/utils/hash.util';
+import { GSService } from '@/common/services/gs/gs.service';
+import { ConfigService } from '@/config/config.service';
+import { GSErrorCodes } from '@/shared/constants/gs-error.constants';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  private readonly gsOperatorCode: string;
+  private readonly gsSecretKey: string;
+
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private readonly gsService: GSService,
+    private readonly configService: ConfigService,
+  ) {
+    this.gsOperatorCode = configService.getGSOperatorCode();
+    this.gsSecretKey = configService.getGSSecretKey();
+  }
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
     try {
-      const { name, email, password, role, phoneNumber } = createUserDto;
-      const existingUser = await this.userModel.exists({ email });
+      const { fullName, username, email, password, role, phoneNumber } = createUserDto;
+
+      // Tạo người chơi trên GS
+      const resGS = await this.gsService.createPlayer({
+        operatorcode: this.gsOperatorCode,
+        username,
+        signature: hashMD5(`${this.gsOperatorCode}${username}${this.gsSecretKey}`).toUpperCase(),
+      });
+
+      if (resGS.errCode !== GSErrorCodes.SUCCESS.code) throw new BadRequestException(resGS.errMsg);
+
+      // Kiểm tra sự tồn tại của username hoặc email trong cùng một truy vấn
+      const existingUser = await this.userModel.findOne({
+        $or: [{ username }, { email }],
+      });
+
       if (existingUser) {
-        throw new ConflictException('Email already exists');
+        if (existingUser.username === username) {
+          throw new ConflictException('Username already exists');
+        }
+        if (existingUser.email === email) {
+          throw new ConflictException('Email already exists');
+        }
       }
 
+      // Hash password và tạo user mới
       const hashedPassword = await hashPassword(password);
-      const newUser = new this.userModel({ name, email, password: hashedPassword, role, phoneNumber });
+      const newUser = new this.userModel({
+        username,
+        fullName,
+        email,
+        password: hashedPassword,
+        role,
+        phoneNumber,
+      });
+
       return await newUser.save();
     } catch (error) {
       throw error;
