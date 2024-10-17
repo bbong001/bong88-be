@@ -4,14 +4,17 @@ import { Document, ObjectId, Types } from 'mongoose';
 
 @Schema({ versionKey: false, timestamps: true })
 export class User extends Document {
-  @Prop({ required: true })
-  name: string;
-
   @Prop({ required: true, unique: true, index: true })
-  email: string;
+  username: string;
 
   @Prop({ required: true })
   password: string;
+
+  @Prop({ required: true })
+  fullName: string;
+
+  @Prop({ required: true, unique: true, index: true })
+  email: string;
 
   @Prop({ default: null })
   phoneNumber?: string;
@@ -27,9 +30,6 @@ export class User extends Document {
 
   @Prop({ default: null })
   avatar?: string;
-
-  @Prop({ type: [Types.ObjectId], ref: 'Genre' })
-  favoriteGenres?: ObjectId[];
 
   @Prop({ default: null })
   lastLogin: Date;
