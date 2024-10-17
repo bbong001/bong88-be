@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '../http/http.service';
 import { ConfigService } from '@/config/config.service';
 import { CreatePlayer } from './interfaces/create-player.interface';
+import queryString from 'query-string';
+import qs from 'qs';
 
 @Injectable()
 export class GSService {
@@ -15,8 +17,15 @@ export class GSService {
   }
 
   async createPlayer(_createPlayer: CreatePlayer): Promise<any> {
-    console.log('🚀 ~ GSService ~ createPlayer ~ _createPlayer:', _createPlayer);
-    // console.log(`${this.gsApiUrl}/${stringify(_createPlayer)}`);
-    return this.httpService.get(`${this.gsApiUrl}`);
+    const endpoint = `${this.gsApiUrl}/createMember.aspx`;
+    const queryString = qs.stringify(_createPlayer);
+    const url = `${endpoint}?${queryString}`;
+
+    try {
+      const response = await this.httpService.get(url);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 }
