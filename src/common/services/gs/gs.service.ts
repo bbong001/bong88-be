@@ -8,6 +8,7 @@ import { MakeTransfer } from './interfaces/make-transfer.interface';
 import { GetBalance } from './interfaces/get-balance.interface';
 import { LaunchDGames } from './interfaces/launch-dgames.interface';
 import { ChangePassword } from './interfaces/change-password.interface';
+import { CheckAgentCredit } from './interfaces/check-agent-credit.interface';
 
 @Injectable()
 export class GSService {
@@ -88,6 +89,19 @@ export class GSService {
   async changePassword(_changePassword: ChangePassword): Promise<any> {
     const endpoint = `${this.gsApiUrl}/changePassword.aspx`;
     const queryString = qs.stringify(_changePassword);
+    const url = `${endpoint}?${queryString}`;
+
+    try {
+      const response = await this.httpService.get(url);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async checkAgentCredit(_checkAgentCredit: CheckAgentCredit): Promise<any> {
+    const endpoint = `${this.gsApiUrl}/checkAgentCredit.aspx`;
+    const queryString = qs.stringify(_checkAgentCredit);
     const url = `${endpoint}?${queryString}`;
 
     try {
