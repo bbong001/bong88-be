@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '../http/http.service';
 import { ConfigService } from '@/config/config.service';
 import { CreatePlayer } from './interfaces/create-player.interface';
-import queryString from 'query-string';
 import qs from 'qs';
 
 @Injectable()
