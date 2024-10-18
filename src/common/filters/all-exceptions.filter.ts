@@ -29,7 +29,7 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
       data: null, // Không có dữ liệu khi xảy ra lỗi
       message: message,
       timestamp: new Date().toISOString(),
-      path: request.url,
+      // path: request.url,
     });
   }
 }
