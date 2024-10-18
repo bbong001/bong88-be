@@ -15,6 +15,7 @@ import { FetchByKey } from './interfaces/get-betting-history.interface';
 import { GetDailyWager } from './interfaces/get-daily-wager.interface';
 import { FetchArchieve } from './interfaces/get-betting-history-archieve.interface';
 import { MarkByJson } from './interfaces/markbyjson.interface';
+import { GetGameList } from './interfaces/get-game-list.interface';
 
 @Injectable()
 export class GSService {
@@ -171,7 +172,7 @@ export class GSService {
   }
 
   async markByJson(_markByJson: MarkByJson): Promise<any> {
-    const endpoint = `${this.gsApiUrl}/markbyjson.aspx`;
+    const endpoint = `${this.gsApiUrl}/markbyjson.ashx`;
     try {
       const response = await this.httpService.post(endpoint, _markByJson);
       return response.data;
@@ -181,9 +182,22 @@ export class GSService {
   }
 
   async markArchieve(_markArchieve: MarkByJson): Promise<any> {
-    const endpoint = `${this.gsApiUrl}/markArchieve.aspx`;
+    const endpoint = `${this.gsApiUrl}/markArchieve.ashx`;
     try {
       const response = await this.httpService.post(endpoint, _markArchieve);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getGameList(_getGameList: GetGameList): Promise<any> {
+    const endpoint = `${this.gsApiUrl}/getGameList.ashx`;
+    const queryString = qs.stringify(_getGameList);
+    const url = `${endpoint}?${queryString}`;
+
+    try {
+      const response = await this.httpService.get(url);
       return response.data;
     } catch (error) {
       throw error;
