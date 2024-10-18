@@ -13,6 +13,7 @@ import { CheckMemberProductUsername } from './interfaces/check-member-product-us
 import { CheckTransaction } from './interfaces/check-transaction.interface';
 import { FetchByKey } from './interfaces/get-betting-history.interface';
 import { GetDailyWager } from './interfaces/get-daily-wager.interface';
+import { FetchArchieve } from './interfaces/get-betting-history-archieve.interface';
 
 @Injectable()
 export class GSService {
@@ -145,6 +146,19 @@ export class GSService {
   async getDailyWager(_getDailyWager: GetDailyWager): Promise<any> {
     const endpoint = `${this.gsApiUrl}/getDailyWager.aspx`;
     const queryString = qs.stringify(_getDailyWager);
+    const url = `${endpoint}?${queryString}`;
+
+    try {
+      const response = await this.httpService.get(url);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async fetchArchieve(_fetchArchieve: FetchArchieve): Promise<any> {
+    const endpoint = `${this.gsApiUrl}/fetchArchieve.aspx`;
+    const queryString = qs.stringify(_fetchArchieve);
     const url = `${endpoint}?${queryString}`;
 
     try {
