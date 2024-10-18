@@ -30,8 +30,8 @@ export class UsersService {
       // Tạo người chơi trên GS
       const resGS = await this.gsService.createPlayer({
         operatorcode: this.gsOperatorCode,
-        username,
-        signature: hashMD5(`${this.gsOperatorCode}${username}${this.gsSecretKey}`).toUpperCase(),
+        username: username.toLowerCase(),
+        signature: hashMD5(`${this.gsOperatorCode}${username.toLowerCase()}${this.gsSecretKey}`).toUpperCase(),
       });
 
       if (resGS.errCode !== GSErrorCodes.SUCCESS.code) throw new BadRequestException(resGS.errMsg);
