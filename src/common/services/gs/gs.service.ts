@@ -11,6 +11,7 @@ import { ChangePassword } from './interfaces/change-password.interface';
 import { CheckAgentCredit } from './interfaces/check-agent-credit.interface';
 import { CheckMemberProductUsername } from './interfaces/check-member-product-username.interface';
 import { CheckTransaction } from './interfaces/check-transaction.interface';
+import { FetchByKey } from './interfaces/get-betting-history.interface';
 
 @Injectable()
 export class GSService {
@@ -130,6 +131,19 @@ export class GSService {
   async checkTransaction(_checkTransaction: CheckTransaction): Promise<any> {
     const endpoint = `${this.gsApiUrl}/checkTransaction.aspx`;
     const queryString = qs.stringify(_checkTransaction);
+    const url = `${endpoint}?${queryString}`;
+
+    try {
+      const response = await this.httpService.get(url);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async fetchByKey(_fetchByKey: FetchByKey): Promise<any> {
+    const endpoint = `${this.gsApiUrl}/fetchbykey.aspx`;
+    const queryString = qs.stringify(_fetchByKey);
     const url = `${endpoint}?${queryString}`;
 
     try {
