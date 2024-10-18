@@ -14,6 +14,7 @@ import { CheckTransaction } from './interfaces/check-transaction.interface';
 import { FetchByKey } from './interfaces/get-betting-history.interface';
 import { GetDailyWager } from './interfaces/get-daily-wager.interface';
 import { FetchArchieve } from './interfaces/get-betting-history-archieve.interface';
+import { MarkByJson } from './interfaces/markbyjson.interface';
 
 @Injectable()
 export class GSService {
@@ -163,6 +164,26 @@ export class GSService {
 
     try {
       const response = await this.httpService.get(url);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async markByJson(_markByJson: MarkByJson): Promise<any> {
+    const endpoint = `${this.gsApiUrl}/markbyjson.aspx`;
+    try {
+      const response = await this.httpService.post(endpoint, _markByJson);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async markArchieve(_markArchieve: MarkByJson): Promise<any> {
+    const endpoint = `${this.gsApiUrl}/markArchieve.aspx`;
+    try {
+      const response = await this.httpService.post(endpoint, _markArchieve);
       return response.data;
     } catch (error) {
       throw error;
