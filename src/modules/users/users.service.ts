@@ -7,7 +7,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { hashMD5, hashPassword } from '@/shared/utils/hash.util';
 import { GSService } from '@/common/services/gs/gs.service';
 import { ConfigService } from '@/config/config.service';
-import { GSErrorCodes } from '@/shared/constants/gs-error.constants';
+import { GSErrorCodes } from '@/shared/constants/gs-error.constant';
 
 @Injectable()
 export class UsersService {
