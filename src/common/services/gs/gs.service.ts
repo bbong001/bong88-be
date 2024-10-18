@@ -10,6 +10,7 @@ import { LaunchDGames } from './interfaces/launch-dgames.interface';
 import { ChangePassword } from './interfaces/change-password.interface';
 import { CheckAgentCredit } from './interfaces/check-agent-credit.interface';
 import { CheckMemberProductUsername } from './interfaces/check-member-product-username.interface';
+import { CheckTransaction } from './interfaces/check-transaction.interface';
 
 @Injectable()
 export class GSService {
@@ -116,6 +117,19 @@ export class GSService {
   async checkMemberProductUsername(_checkMemberProductUsername: CheckMemberProductUsername): Promise<any> {
     const endpoint = `${this.gsApiUrl}/checkMemberProductUsername.aspx`;
     const queryString = qs.stringify(_checkMemberProductUsername);
+    const url = `${endpoint}?${queryString}`;
+
+    try {
+      const response = await this.httpService.get(url);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async checkTransaction(_checkTransaction: CheckTransaction): Promise<any> {
+    const endpoint = `${this.gsApiUrl}/checkTransaction.aspx`;
+    const queryString = qs.stringify(_checkTransaction);
     const url = `${endpoint}?${queryString}`;
 
     try {
