@@ -3,8 +3,8 @@ import { HttpService } from '../http/http.service';
 import { ConfigService } from '@/config/config.service';
 import { CreatePlayer } from './interfaces/create-player.interface';
 import qs from 'qs';
-import { GetBalance } from './interfaces/get-balance.interface';
 import { MakeTransfer } from './interfaces/make-transfer.interface';
+import { GetBalance } from './interfaces/get-balance.interface';
 
 @Injectable()
 export class GSService {
