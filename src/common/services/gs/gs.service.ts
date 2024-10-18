@@ -12,6 +12,7 @@ import { CheckAgentCredit } from './interfaces/check-agent-credit.interface';
 import { CheckMemberProductUsername } from './interfaces/check-member-product-username.interface';
 import { CheckTransaction } from './interfaces/check-transaction.interface';
 import { FetchByKey } from './interfaces/get-betting-history.interface';
+import { GetDailyWager } from './interfaces/get-daily-wager.interface';
 
 @Injectable()
 export class GSService {
@@ -141,9 +142,9 @@ export class GSService {
     }
   }
 
-  async fetchByKey(_fetchByKey: FetchByKey): Promise<any> {
-    const endpoint = `${this.gsApiUrl}/fetchbykey.aspx`;
-    const queryString = qs.stringify(_fetchByKey);
+  async getDailyWager(_getDailyWager: GetDailyWager): Promise<any> {
+    const endpoint = `${this.gsApiUrl}/getDailyWager.aspx`;
+    const queryString = qs.stringify(_getDailyWager);
     const url = `${endpoint}?${queryString}`;
 
     try {
