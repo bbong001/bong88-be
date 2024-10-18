@@ -3,8 +3,9 @@ import { HttpService } from '../http/http.service';
 import { ConfigService } from '@/config/config.service';
 import qs from 'qs';
 import { CreatePlayer } from './interfaces/create-player.interface';
-import { GetBalance } from './interfaces/get-balance.interface';
 import { LaunchGames } from './interfaces/launch-games.interface';
+import { MakeTransfer } from './interfaces/make-transfer.interface';
+import { GetBalance } from './interfaces/get-balance.interface';
 
 @Injectable()
 export class GSService {
@@ -46,6 +47,19 @@ export class GSService {
   async launchGames(_launchGames: LaunchGames): Promise<any> {
     const endpoint = `${this.gsApiUrl}/launchGames.aspx`;
     const queryString = qs.stringify(_launchGames);
+    const url = `${endpoint}?${queryString}`;
+
+    try {
+      const response = await this.httpService.get(url);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async makeTransfer(_makeTransfer: MakeTransfer): Promise<any> {
+    const endpoint = `${this.gsApiUrl}/makeTransfer.aspx`;
+    const queryString = qs.stringify(_makeTransfer);
     const url = `${endpoint}?${queryString}`;
 
     try {
