@@ -6,6 +6,7 @@ import { CreatePlayer } from './interfaces/create-player.interface';
 import { LaunchGames } from './interfaces/launch-games.interface';
 import { MakeTransfer } from './interfaces/make-transfer.interface';
 import { GetBalance } from './interfaces/get-balance.interface';
+import { LaunchDGames } from './interfaces/launch-dgames.interface';
 
 @Injectable()
 export class GSService {
@@ -44,6 +45,19 @@ export class GSService {
     }
   }
 
+  async makeTransfer(_makeTransfer: MakeTransfer): Promise<any> {
+    const endpoint = `${this.gsApiUrl}/makeTransfer.aspx`;
+    const queryString = qs.stringify(_makeTransfer);
+    const url = `${endpoint}?${queryString}`;
+
+    try {
+      const response = await this.httpService.get(url);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async launchGames(_launchGames: LaunchGames): Promise<any> {
     const endpoint = `${this.gsApiUrl}/launchGames.aspx`;
     const queryString = qs.stringify(_launchGames);
@@ -57,9 +71,9 @@ export class GSService {
     }
   }
 
-  async makeTransfer(_makeTransfer: MakeTransfer): Promise<any> {
-    const endpoint = `${this.gsApiUrl}/makeTransfer.aspx`;
-    const queryString = qs.stringify(_makeTransfer);
+  async launchDGames(_launchDGames: LaunchDGames): Promise<any> {
+    const endpoint = `${this.gsApiUrl}/launchDGames.aspx`;
+    const queryString = qs.stringify(_launchDGames);
     const url = `${endpoint}?${queryString}`;
 
     try {
