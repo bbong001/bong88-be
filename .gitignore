@@ -36,3 +36,8 @@ lerna-debug.log*
 
 # env
 .env
+
+public_key.pem
+private_key.pem
+public_key_base64.txt
+private_key_base64.txt

@@ -17,9 +17,14 @@ import { JwtStrategy } from './passport/jwt.strategy';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         global: true,
-        secret: configService.getJwtSecretKey(),
+        privateKey: configService.getJwtPrivateKey(),
+        publicKey: configService.getJwtPublicKey(),
         signOptions: {
           expiresIn: configService.getJwtAccessTokenExpired(),
+          algorithm: 'RS256',
+        },
+        verifyOptions: {
+          algorithms: ['RS256'],
         },
       }),
       inject: [ConfigService],
