@@ -27,6 +27,10 @@ export class ConfigService {
     return this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRED');
   }
 
+  getJwtRefreshTokenExpired(): string {
+    return this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRES_IN');
+  }
+
   getGSApiUrl(): string {
     return this.configService.get<string>('GS_API_URL');
   }
@@ -37,5 +41,25 @@ export class ConfigService {
 
   getGSSecretKey(): string {
     return this.configService.get<string>('GS_SECRET_KEY');
+  }
+
+  getRedisHost(): string {
+    return this.configService.get<string>('REDIS_HOST');
+  }
+
+  getRedisPort(): number {
+    return this.configService.get<number>('REDIS_PORT');
+  }
+
+  getRedisUsername(): string {
+    return this.configService.get<string>('REDIS_USERNAME');
+  }
+
+  getRedisPassword(): string {
+    return this.configService.get<string>('REDIS_PASSWORD');
+  }
+
+  getRedisDB(): number {
+    return this.configService.get<number>('REDIS_DB');
   }
 }

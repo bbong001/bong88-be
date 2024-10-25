@@ -1,5 +1,6 @@
 import { Catch, ArgumentsHost, HttpStatus, HttpException } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
+import { error } from 'console';
 
 @Catch()
 export class AllExceptionsFilter extends BaseExceptionFilter {
@@ -11,13 +12,15 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
     // Kiểm tra xem exception có phải là HttpException không
     let status = HttpStatus.INTERNAL_SERVER_ERROR; // Mặc định là 500
     let message: any = 'Unknown error occurred'; // Thông điệp mặc định
+    let errorCode = 0;
 
     if (exception instanceof HttpException) {
       status = exception.getStatus(); // Lấy mã trạng thái từ HttpException
-      message = exception.getResponse(); // Lấy thông điệp từ HttpException
+      const _response = exception.getResponse(); // Lấy thông điệp từ HttpException
       // Nếu message không phải là string, có thể lấy từ message property
-      if (typeof message !== 'string') {
-        message = (message as any).message || 'Unknown error occurred';
+      if (typeof _response !== 'string') {
+        message = (_response as any).message || 'Unknown error occurred';
+        errorCode = (_response as any).errorCode;
       }
     } else if (exception instanceof Error) {
       message = exception.message; // Lấy thông điệp từ đối tượng Error
@@ -25,8 +28,9 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
 
     response.status(status).json({
       statusCode: status,
+      errorCode: errorCode,
       success: false,
-      data: null, // Không có dữ liệu khi xảy ra lỗi
+      data: null,
       message: message,
       timestamp: new Date().toISOString(),
       // path: request.url,
