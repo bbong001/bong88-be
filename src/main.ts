@@ -35,7 +35,7 @@ async function bootstrap() {
   // Cấu hình swagger
   const config = new DocumentBuilder()
     .setTitle('API Documentation')
-    .setDescription('The Movies API description')
+    .setDescription('The API description')
     .setVersion('1.0')
     .addBearerAuth({
       type: 'http',
