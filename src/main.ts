@@ -1,6 +1,6 @@
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from '@/app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerDocumentOptions, SwaggerModule } from '@nestjs/swagger';
 import { TransformResponseInterceptor } from '@/common/interceptors/transform-response.interceptor';
@@ -9,6 +9,9 @@ import { AllExceptionsFilter } from '@/common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Tạo instance của Logger
+  const logger = new Logger('Application');
 
   // Lấy ConfigService
   const configService = app.get(ConfigService);
@@ -64,7 +67,7 @@ async function bootstrap() {
   const port = configService.get<number>('PORT', 6677);
   await app.listen(port);
 
-  console.log(`Application is running on: http://127.0.0.1:${port}/`);
+  logger.log(`Application is running on: http://127.0.0.1:${port}/`);
 }
 
 bootstrap();
