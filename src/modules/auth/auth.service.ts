@@ -6,7 +6,10 @@ import { ConfigService } from '@/config/config.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { RedisService } from '@/common/services/redis/redis.service';
-import { generateJwtRefreshToken } from '@/shared/utils/token.util';
+import { generateRefreshToken } from '@/shared/utils/token.util';
+import { REDIS_KEY } from '@/shared/constants/redis-key.constant';
+import dayjs from '@/shared/utils/dayjs.util';
+import { UnauthorizedErrorCode } from '@/shared/constants/error-code.constants';
 
 @Injectable()
 export class AuthService {
@@ -15,8 +18,6 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private redisService: RedisService,
-
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
@@ -33,26 +34,60 @@ export class AuthService {
     return user;
   }
 
-  async login(user: any) {
-    const payload = { username: user.email, sub: user._id };
+  async login(user: any): Promise<any> {
+    try {
+      const payload = { username: user.email, sub: user._id };
+      const accessToken = this.jwtService.sign(payload);
+      const refreshToken = generateRefreshToken();
 
-    const accessToken = this.jwtService.sign(payload);
-    const refreshToken = generateJwtRefreshToken(
-      user.id,
-      this.configService.getJwtSecretKey(),
-      this.configService.getJwtRefreshTokenExpired(),
-    );
+      // const accessTokenTTL = this.parseDuration(this.configService.getJwtAccessTokenExpired());
+      const refreshTokenTTL = this.parseDuration(this.configService.getJwtRefreshTokenExpired());
 
-    const refreshTokenTTL = this.parseDuration(this.configService.getJwtRefreshTokenExpired());
+      await this.redisService.setValue(`${REDIS_KEY.REFRESH_TOKEN}:${refreshToken}`, user.id, refreshTokenTTL / 1000);
 
-    await this.redisService.setValue(user.id, refreshToken, refreshTokenTTL / 1000);
+      // const accessTokenExpiredAt = new Date(Date.now() + accessTokenTTL * 1000).toISOString();
+      // const refreshTokenExpiredAt = new Date(Date.now() + refreshTokenTTL * 1000).toISOString();
 
-    // await this.cacheManager.set(user.id, refreshToken, refreshTokenTTL);
+      return {
+        accessToken,
+        refreshToken,
+        // accessTokenExpiredAt: accessTokenExpiredAt,
+        // refreshTokenExpiredAt: refreshTokenExpiredAt,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
 
-    return {
-      accessToken,
-      refreshToken,
-    };
+  async refreshToken(oldRefreshToken: string): Promise<any> {
+    try {
+      // Lấy userId từ Redis dựa trên refreshToken
+      const userId = await this.redisService.getValue(`${REDIS_KEY.REFRESH_TOKEN}:${oldRefreshToken}`);
+      if (!userId) {
+        throw new UnauthorizedException({
+          errorCode: UnauthorizedErrorCode.INVALID_REFRESH_TOKEN,
+          message: 'Invalid refresh token',
+        });
+      }
+
+      // Tạo payload cho access token mới
+      const payload = { sub: userId };
+      const newAccessToken = this.jwtService.sign(payload);
+
+      // Tạo refresh token mới
+      const newRefreshToken = generateRefreshToken();
+      const refreshTokenTTL = this.parseDuration(this.configService.getJwtRefreshTokenExpired());
+
+      // Lưu trữ refresh token mới vào Redis, thay thế refresh token cũ
+      await this.redisService.setValue(`${REDIS_KEY.REFRESH_TOKEN}:${newRefreshToken}`, userId, refreshTokenTTL / 1000);
+
+      return {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   // Hàm parseDuration để chuyển đổi chuỗi thời gian thành ms

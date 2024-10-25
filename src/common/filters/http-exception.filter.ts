@@ -11,9 +11,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     response.status(status).json({
       statusCode: status,
-      success: false, // Vì có lỗi xảy ra nên thành công sẽ là false
-      data: null, // Không có dữ liệu khi xảy ra lỗi
-      message: exception.message, // Sử dụng thông báo lỗi từ exception
+      success: false,
+      data: null,
+      message: exception.message,
       timestamp: new Date().toISOString(),
       // path: request.url,
     });
