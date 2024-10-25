@@ -1,5 +1,5 @@
 // src/common/redis/redis.module.ts
-import { Module, Global } from '@nestjs/common';
+import { Module, Global, Logger } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-ioredis';
 import { ConfigModule } from '@/config/config.module';
@@ -40,21 +40,23 @@ import Redis from 'ioredis';
 
         const client = new Redis(redisOptions);
 
+        const logger = new Logger('Redis');
+
         // Thêm các event listeners để quản lý trạng thái kết nối
         client.on('connect', () => {
-          console.log('Redis client connected');
+          logger.log('Redis client connected');
         });
 
         client.on('ready', () => {
-          console.log('Redis client ready');
+          logger.log('Redis client ready');
         });
 
         client.on('error', (err) => {
-          console.error('Redis client error:', err);
+          logger.error('Redis client error:', err);
         });
 
         client.on('end', () => {
-          console.log('Redis client disconnected');
+          logger.log('Redis client disconnected');
         });
 
         return client;
