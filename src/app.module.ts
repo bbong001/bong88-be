@@ -9,6 +9,7 @@ import { ConfigModule } from './config/config.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './modules/auth/passport/jwt-auth.guard';
 import { GSModule } from './common/services/gs/gs.module';
+import { RedisModule } from './common/services/redis/redis.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { GSModule } from './common/services/gs/gs.module';
         uri: configService.getMongoDbUrl(),
       }),
     }),
+    RedisModule,
     UsersModule,
     AuthModule,
     GSModule,
