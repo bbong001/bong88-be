@@ -62,4 +62,8 @@ export class ConfigService {
   getRedisDB(): number {
     return this.configService.get<number>('REDIS_DB');
   }
+
+  getAdminDefaultPassword(): string {
+    return this.configService.get<string>('ADMIN_DEFAULT_PASSWORD');
+  }
 }

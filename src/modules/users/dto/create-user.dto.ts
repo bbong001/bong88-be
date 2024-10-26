@@ -1,5 +1,6 @@
+import { ROLES } from '@/shared/constants/role.constant';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsNumber, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty({
@@ -35,27 +36,24 @@ export class CreateUserDto {
   email: string;
 
   @ApiProperty({
-    example: '0989898989',
+    example: '84 999999999',
   })
   @IsOptional()
-  @IsPhoneNumber('VN', { message: 'Số điện thoại không đúng định dạng.' })
-  phoneNumber?: string;
+  // @IsPhoneNumber('VN', { message: 'Số điện thoại không đúng định dạng.' })
+  mobile?: string;
 
   @ApiProperty({
-    example: 'string',
+    example: 0,
   })
-  address?: string;
+  @IsNumber()
+  @IsOptional()
+  walletBalance?: number;
 
   @ApiProperty({
-    example: `user | admin`,
+    example: 0,
+    description: 'The full name of the user',
   })
-  @IsString()
-  role?: string;
-
-  @ApiProperty({
-    example: 'string',
-  })
-  avatar?: string;
-
-  isActive: boolean;
+  @IsNumber()
+  @IsOptional()
+  role?: number;
 }

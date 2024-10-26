@@ -8,6 +8,7 @@ import { hashMD5, hashPassword } from '@/shared/utils/hash.util';
 import { GSService } from '@/common/services/gs/gs.service';
 import { ConfigService } from '@/config/config.service';
 import { GSErrorCodes } from '@/shared/constants/gs-error.constants';
+import { ROLES } from '@/shared/constants/role.constant';
 
 @Injectable()
 export class UsersService {
@@ -23,18 +24,21 @@ export class UsersService {
     this.gsSecretKey = configService.getGSSecretKey();
   }
 
-  async createUser(createUserDto: CreateUserDto): Promise<User> {
+  async createUser(req, createUserDto: CreateUserDto): Promise<User> {
     try {
-      const { fullName, username, email, password, role, phoneNumber } = createUserDto;
+      const { fullName, username, email, password, mobile, walletBalance, role } = createUserDto;
+      const { user } = req;
 
       // Tạo người chơi trên GS
-      const resGS = await this.gsService.createPlayer({
-        operatorcode: this.gsOperatorCode,
-        username: username.toLowerCase(),
-        signature: hashMD5(`${this.gsOperatorCode}${username.toLowerCase()}${this.gsSecretKey}`).toUpperCase(),
-      });
+      if (role === ROLES.PLAYER || user.role === ROLES.AGENT) {
+        const resGS = await this.gsService.createPlayer({
+          operatorcode: this.gsOperatorCode,
+          username: username.toLowerCase(),
+          signature: hashMD5(`${this.gsOperatorCode}${username.toLowerCase()}${this.gsSecretKey}`).toUpperCase(),
+        });
 
-      if (resGS.errCode !== GSErrorCodes.SUCCESS.code) throw new BadRequestException(resGS.errMsg);
+        if (resGS.errCode !== GSErrorCodes.SUCCESS.code) throw new BadRequestException(resGS.errMsg);
+      }
 
       // Kiểm tra sự tồn tại của username hoặc email trong cùng một truy vấn
       const existingUser = await this.userModel.findOne({
@@ -43,22 +47,27 @@ export class UsersService {
 
       if (existingUser) {
         if (existingUser.username === username) {
-          throw new ConflictException('Username already exists');
-        }
-        if (existingUser.email === email) {
-          throw new ConflictException('Email already exists');
+          throw new ConflictException('Tên đăng nhập đã tồn tại');
         }
       }
 
       // Hash password và tạo user mới
       const hashedPassword = await hashPassword(password);
+
+      const _role = role ? role : Number(user.role) + 1;
+
+      if (!_role) {
+        throw new ConflictException('Vai trò người dùng không hợp lệ');
+      }
+
       const newUser = new this.userModel({
         username,
         fullName,
         email,
         password: hashedPassword,
-        role,
-        phoneNumber,
+        mobile,
+        walletBalance,
+        role: _role,
       });
 
       return await newUser.save();
@@ -115,6 +124,15 @@ export class UsersService {
     const user = await this.userModel.findOne({ email }).exec();
     if (!user) {
       throw new NotFoundException(`User with email ${email} not found`);
+    }
+
+    return user;
+  }
+
+  async findByUsername(username: string): Promise<User> {
+    const user = await this.userModel.findOne({ username }).exec();
+    if (!user) {
+      throw new NotFoundException(`User with email ${username} not found`);
     }
 
     return user;
