@@ -1,4 +1,11 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
@@ -9,6 +16,7 @@ import { GSService } from '@/common/services/gs/gs.service';
 import { ConfigService } from '@/config/config.service';
 import { GSErrorCodes } from '@/shared/constants/gs-error.constants';
 import { ROLES } from '@/shared/constants/role.constant';
+import { PaginationResult } from '@/common/interfaces/pagination-result.interface';
 
 @Injectable()
 export class UsersService {
@@ -24,10 +32,13 @@ export class UsersService {
     this.gsSecretKey = configService.getGSSecretKey();
   }
 
-  async createUser(req, createUserDto: CreateUserDto): Promise<User> {
+  async createUser(user: any, createUserDto: CreateUserDto): Promise<User> {
     try {
       const { fullName, username, email, password, mobile, walletBalance, role } = createUserDto;
-      const { user } = req;
+
+      if (role < user.role) {
+        throw new ConflictException('Không thể tạo tài khoản có quyền lớn hơn tài khoản của bạn');
+      }
 
       // Tạo người chơi trên GS
       if (role === ROLES.PLAYER || user.role === ROLES.AGENT) {
@@ -68,6 +79,7 @@ export class UsersService {
         mobile,
         walletBalance,
         role: _role,
+        parentId: user.id,
       });
 
       return await newUser.save();
@@ -76,16 +88,40 @@ export class UsersService {
     }
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userModel.find().exec();
+  async findAll(userId: string, paginationOptions: { page: number; limit: number }): Promise<PaginationResult<User>> {
+    const { page, limit } = paginationOptions;
+    const skip = (page - 1) * limit;
+    const [results, total] = await Promise.all([
+      this.userModel.find({ parentId: userId }).skip(skip).limit(limit).exec(),
+      this.userModel.countDocuments({ parentId: userId }).exec(),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      results,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   }
 
-  async findById(id: string): Promise<User> {
-    const user = await this.userModel.findById(id).exec();
-    if (!user) {
+  async findById(user: any, id: string): Promise<User> {
+    if (!mongoose.isValidObjectId(id)) {
+      throw new BadRequestException(`${id} không đúng định dạng Mongodb`);
+    }
+
+    const _user = await this.userModel.findById(id).exec();
+    if (!_user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
-    return user;
+
+    if (user.role < _user.role) {
+      throw new ForbiddenException(`User with role ${user.role} not permissions`);
+    }
+
+    return _user;
   }
 
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
