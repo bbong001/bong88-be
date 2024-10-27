@@ -6,10 +6,30 @@ export class UpdateUserDto {
   name?: string;
 
   @IsOptional()
+  @IsString()
+  password?: string;
+
+  @IsOptional()
+  @IsString()
+  fullName?: string;
+
+  @IsOptional()
   @IsEmail()
   email?: string;
 
   @IsOptional()
   @IsString()
-  password?: string;
+  mobile?: string;
+
+  @IsOptional()
+  @IsString()
+  avt?: string;
+
+  @IsOptional()
+  @IsString()
+  walletBalance?: number;
+
+  @IsOptional()
+  @IsString()
+  accountStatus?: number;
 }
