@@ -21,9 +21,9 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findByEmail(username);
+    const user = await this.usersService.findByUsername(username);
     if (!user) {
-      throw new UnauthorizedException('Email không tồn tại');
+      throw new UnauthorizedException('Người dùng không tồn tại');
     }
 
     const isValidPassword = await comparePassword(pass, user.password);
@@ -36,7 +36,7 @@ export class AuthService {
 
   async login(user: any): Promise<any> {
     try {
-      const payload = { username: user.email, sub: user._id };
+      const payload = { sub: user._id, username: user.username, role: user.role };
       const accessToken = this.jwtService.sign(payload);
       const refreshToken = generateRefreshToken();
 

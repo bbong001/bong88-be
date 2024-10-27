@@ -4,7 +4,7 @@ import { IsEmail, IsNotEmpty } from 'class-validator';
 export class CreateAuthDto {
   @IsNotEmpty({ message: 'Tên đăng nhập không được để trống.' })
   @ApiProperty({
-    example: 'xxx@gmail.com',
+    example: 'string',
     required: true,
   })
   @IsEmail()

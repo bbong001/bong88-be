@@ -1,4 +1,5 @@
-import { Role } from '@/shared/constants/role.constant';
+import { ACCOUNT_STATUS } from '@/shared/constants/account-status.contant';
+import { ROLES } from '@/shared/constants/role.constant';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, ObjectId, Types } from 'mongoose';
 
@@ -10,29 +11,32 @@ export class User extends Document {
   @Prop({ required: true })
   password: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, index: true })
   fullName: string;
 
   @Prop({ required: true, unique: true, index: true })
   email: string;
 
   @Prop({ default: null })
-  phoneNumber?: string;
+  mobile?: string;
+
+  @Prop({ default: ROLES.PLAYER, index: true })
+  role: number;
 
   @Prop({ default: null })
-  address?: string;
+  avt?: string;
 
-  @Prop({ default: Role.USER })
-  role: string;
-
-  @Prop({ default: true })
-  isActive: boolean;
+  @Prop({ default: 0 })
+  walletBalance?: number;
 
   @Prop({ default: null })
-  avatar?: string;
+  lastLoginAt: Date;
 
-  @Prop({ default: null })
-  lastLogin: Date;
+  @Prop({ default: ACCOUNT_STATUS.AVAILABLE })
+  accountStatus?: number;
+
+  @Prop({ required: false, index: true, type: Types.ObjectId, ref: 'User', default: null })
+  parentId?: Types.ObjectId;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
