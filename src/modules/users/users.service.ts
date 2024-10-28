@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -125,10 +125,8 @@ export class UsersService {
       const { fullName, email, password, mobile, walletBalance, accountStatus, role } = updateUserDto;
       const updateData: UpdateUserDto = { fullName, email, password, mobile, walletBalance, accountStatus, role };
 
-      const userUpdate = await this.userModel.findById(id).exec();
-      if (!userUpdate) throw new NotFoundException(`User with id ${id} not found`);
-      if (userUpdate.parentId !== currentUser.id)
-        throw new ForbiddenException(`Không thể sửa người dùng không thuộc phạm vi quản lý`);
+      const isCurrentUserCanAction = await this.checkCurrentUserCanAction(id, currentUser.id);
+      if (!isCurrentUserCanAction) throw new ForbiddenException(`Không thể sửa người dùng không thuộc phạm vi quản lý`);
 
       if (password) {
         // Nếu có password, hash nó và thêm vào đối tượng cập nhật
@@ -162,5 +160,12 @@ export class UsersService {
     if (!user) throw new NotFoundException(`User with email ${username} not found`);
 
     return user;
+  }
+
+  async checkCurrentUserCanAction(userId: string, currentUserId: Types.ObjectId): Promise<boolean> {
+    const userUpdate = await this.userModel.findById(userId).exec();
+    if (!userUpdate) throw new NotFoundException(`User with id ${userId} not found`);
+    if (userUpdate.parentId !== currentUserId) return false;
+    return true;
   }
 }
