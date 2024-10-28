@@ -1,6 +1,6 @@
 import { ROLES } from '@/shared/constants/role.constant';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsNumber, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsNumber, IsOptional, IsPhoneNumber, IsString, Min } from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty({
@@ -45,15 +45,15 @@ export class CreateUserDto {
   @ApiProperty({
     example: 0,
   })
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   walletBalance?: number;
 
   @ApiProperty({
     example: 0,
-    description: 'The full name of the user',
   })
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
+  @Min(1, { message: 'Role phải lớn hơn 0' })
   role?: number;
 }

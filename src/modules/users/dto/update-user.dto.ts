@@ -1,35 +1,54 @@
-import { IsEmail, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class UpdateUserDto {
-  @IsOptional()
-  @IsString()
-  name?: string;
-
+  @ApiProperty({
+    example: '*********',
+  })
   @IsOptional()
   @IsString()
   password?: string;
 
+  @ApiProperty({
+    example: 'string',
+  })
   @IsOptional()
   @IsString()
   fullName?: string;
 
+  @ApiProperty({
+    example: 'xxx@gmail.com',
+  })
   @IsOptional()
   @IsEmail()
   email?: string;
 
+  @ApiProperty({
+    example: '84 999999999',
+  })
   @IsOptional()
   @IsString()
   mobile?: string;
 
+  @ApiProperty({
+    example: 0,
+  })
   @IsOptional()
-  @IsString()
-  avt?: string;
-
-  @IsOptional()
-  @IsString()
+  @IsNumber()
   walletBalance?: number;
 
+  @ApiProperty({
+    example: 0,
+  })
   @IsOptional()
-  @IsString()
+  @IsNumber()
   accountStatus?: number;
+
+  @ApiProperty({
+    example: 0,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(1, { message: 'Role phải lớn hơn 0' })
+  role?: number;
 }
