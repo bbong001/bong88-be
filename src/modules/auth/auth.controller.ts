@@ -52,7 +52,7 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('logout')
-  @ApiOperation({ summary: 'Refresh token' })
+  @ApiOperation({ summary: 'Đăng xuất' })
   @ApiResponse({ status: 200, description: 'Thành công' })
   async logout(@Body() body: RefreshTokenDto, @Request() req) {
     const { refreshToken } = body;
