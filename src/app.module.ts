@@ -11,6 +11,7 @@ import { JwtAuthGuard } from './modules/auth/passport/jwt-auth.guard';
 import { GSModule } from './common/services/gs/gs.module';
 import { RedisModule } from './common/services/redis/redis.module';
 import { RolesGuard } from './common/guards/roles.guard';
+import { GamesModule } from './modules/games/games.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     UsersModule,
     AuthModule,
     GSModule,
+    GamesModule,
   ],
   controllers: [AppController],
   providers: [
