@@ -48,9 +48,15 @@ export class AuthService {
       // const accessTokenExpiredAt = new Date(Date.now() + accessTokenTTL * 1000).toISOString();
       // const refreshTokenExpiredAt = new Date(Date.now() + refreshTokenTTL * 1000).toISOString();
 
+      const userInfo = await this.usersService.findByUsername(user.username);
+
       return {
-        accessToken,
-        refreshToken,
+        tokenInfos: {
+          accessToken,
+          refreshToken,
+        },
+        userInfos: userInfo,
+
         // accessTokenExpiredAt: accessTokenExpiredAt,
         // refreshTokenExpiredAt: refreshTokenExpiredAt,
       };
