@@ -40,9 +40,10 @@ export class AuthService {
       const accessToken = this.jwtService.sign(payload);
       const refreshToken = generateRefreshToken();
 
-      // const accessTokenTTL = this.parseDuration(this.configService.getJwtAccessTokenExpired());
+      const accessTokenTTL = this.parseDuration(this.configService.getJwtAccessTokenExpired());
       const refreshTokenTTL = this.parseDuration(this.configService.getJwtRefreshTokenExpired());
 
+      await this.redisService.setValue(`${REDIS_KEY.ACCESS_TOKEN}:${accessToken}`, user.id, accessTokenTTL / 1000);
       await this.redisService.setValue(`${REDIS_KEY.REFRESH_TOKEN}:${refreshToken}`, user.id, refreshTokenTTL / 1000);
 
       // const accessTokenExpiredAt = new Date(Date.now() + accessTokenTTL * 1000).toISOString();
@@ -83,14 +84,41 @@ export class AuthService {
       // Tạo refresh token mới
       const newRefreshToken = generateRefreshToken();
       const refreshTokenTTL = this.parseDuration(this.configService.getJwtRefreshTokenExpired());
+      const accessTokenTTL = this.parseDuration(this.configService.getJwtAccessTokenExpired());
 
-      // Lưu trữ refresh token mới vào Redis, thay thế refresh token cũ
       await this.redisService.setValue(`${REDIS_KEY.REFRESH_TOKEN}:${newRefreshToken}`, userId, refreshTokenTTL / 1000);
+      await this.redisService.setValue(`${REDIS_KEY.ACCESS_TOKEN}:${newAccessToken}`, userId, accessTokenTTL / 1000);
 
       return {
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
       };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async logout(accessToken: string, refreshToken: string): Promise<any> {
+    try {
+      const _accessTokenCache = await this.redisService.getValue(`${REDIS_KEY.ACCESS_TOKEN}:${accessToken}`);
+      if (!_accessTokenCache)
+        throw new UnauthorizedException({
+          errorCode: UnauthorizedErrorCode.INVALID_ACCESS_TOKEN,
+          message: 'Invalid access token',
+        });
+
+      const _refreshTokenCache = await this.redisService.getValue(`${REDIS_KEY.REFRESH_TOKEN}:${refreshToken}`);
+      if (!_refreshTokenCache)
+        throw new UnauthorizedException({
+          errorCode: UnauthorizedErrorCode.INVALID_REFRESH_TOKEN,
+          message: 'Invalid refresh token',
+        });
+
+      // Delete both access and refresh tokens from Redis to revoke them
+      await this.redisService.deleteValue(`${REDIS_KEY.ACCESS_TOKEN}:${accessToken}`);
+      await this.redisService.deleteValue(`${REDIS_KEY.REFRESH_TOKEN}:${refreshToken}`);
+
+      return null;
     } catch (error) {
       throw error;
     }
