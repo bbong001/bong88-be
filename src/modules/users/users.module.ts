@@ -10,7 +10,12 @@ import { AdminInitializerService } from './admin-initializer.service';
 import { WalletsModule } from '../wallets/wallets.module';
 
 @Module({
-  imports: [HttpModule, ConfigModule, MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),WalletsModule,],
+  imports: [
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    HttpModule,
+    ConfigModule,
+    WalletsModule,
+  ],
   controllers: [UsersController],
   providers: [UsersService, GSService, AdminInitializerService],
   exports: [UsersService],

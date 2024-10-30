@@ -9,8 +9,6 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, Types } from 'mongoose';
 import { User } from './schemas/user.schema';
-import { Wallet } from '../wallets/schemas/wallet.schema';
-
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { hashMD5, hashPassword } from '@/shared/utils/hash.util';
@@ -19,6 +17,7 @@ import { ConfigService } from '@/config/config.service';
 import { GSErrorCodes } from '@/shared/constants/gs-error.constants';
 import { ROLES } from '@/shared/constants/role.constant';
 import { PaginationResult } from '@/common/interfaces/pagination-result.interface';
+import { Wallet } from '../wallets/schemas/wallets.schema';
 
 @Injectable()
 export class UsersService {
@@ -27,14 +26,14 @@ export class UsersService {
 
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel(Wallet.name) private walletModel: Model<Wallet>, // Tiêm mô hình Wallet
+    @InjectModel(Wallet.name) private walletsModel: Model<Wallet>,
+
     private readonly gsService: GSService,
     private readonly configService: ConfigService,
   ) {
     this.gsOperatorCode = configService.getGSOperatorCode();
     this.gsSecretKey = configService.getGSSecretKey();
   }
-  
 
   async createUser(user: any, createUserDto: CreateUserDto): Promise<User> {
     try {
@@ -83,18 +82,7 @@ export class UsersService {
       });
       const savedUser = await newUser.save();
 
-      // Tạo ví cho người dùng mới
-      const newWallet = new this.walletModel({
-        userId: savedUser._id,
-        username: savedUser.username,
-        money: walletBalance || 0, // Đặt số dư ví ban đầu
-        status: false, // Trạng thái mặc định
-      });
-  
-      await newWallet.save(); // Lưu ví
-  
-      return savedUser; 
-
+      return savedUser;
     } catch (error) {
       throw error;
     }

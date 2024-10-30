@@ -6,27 +6,17 @@ export class Wallet extends Document {
   @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
   userId: Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop({ required: true, index: true })
   username: string;
 
-  @Prop({ default: "Sai thông tin liên kết ví" })
-  thongBao: string;
+  @Prop({ required: true, default: 'MAIN' })
+  wallet: string;
 
-  @Prop({
-    required: true,
-    default: "error",
-    enum: ["success", "warning", "error"],
-  })
-  type: string;
+  @Prop({ required: true, default: 0 })
+  balance: number;
 
-  @Prop({ default: 0 })
-  money: number;
-
-  @Prop({ default: 0 })
-  totalFreeze: number;
-
-  @Prop({ default: false })
-  status: boolean;
+  @Prop({ required: true, default: 0 })
+  available: number;
 }
 
 export const WalletSchema = SchemaFactory.createForClass(Wallet);
