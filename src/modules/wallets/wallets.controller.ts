@@ -2,33 +2,34 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { WalletsService } from './wallets.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { UpdateWalletDto } from './dto/update-wallet.dto';
+import { Wallet } from './schemas/wallets.schema';
 
 @Controller('wallets')
 export class WalletsController {
   constructor(private readonly walletsService: WalletsService) {}
 
-  @Post()
-  create(@Body() createWalletDto: CreateWalletDto) {
-    return this.walletsService.create(createWalletDto);
-  }
+  // @Post()
+  // async create(@Body() createWalletDto: CreateWalletDto): Promise<Wallet> {
+  //   return await this.walletsService.create(createWalletDto);
+  // }
 
   @Get()
-  findAll() {
-    return this.walletsService.findAll();
+  async findAll(): Promise<Wallet[]> {
+    return await this.walletsService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.walletsService.findOne(+id);
+  async findOne(@Param('id') id: string): Promise<Wallet> {
+    return await this.walletsService.findById(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateWalletDto: UpdateWalletDto) {
-    return this.walletsService.update(+id, updateWalletDto);
+  async update(@Param('id') id: string, @Body() updateWalletDto: UpdateWalletDto): Promise<Wallet> {
+    return await this.walletsService.update(id, updateWalletDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.walletsService.remove(+id);
+  async remove(@Param('id') id: string): Promise<Wallet> {
+    return await this.walletsService.remove(id);
   }
 }

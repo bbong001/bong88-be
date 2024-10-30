@@ -1,4 +1,23 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateWalletDto } from './create-wallet.dto';
+import { IsOptional, IsString, IsNumber, IsBoolean } from 'class-validator';
 
-export class UpdateWalletDto extends PartialType(CreateWalletDto) {}
+export class UpdateWalletDto {
+  @IsOptional()
+  @IsString()
+  thongBao?: string;
+
+  @IsOptional()
+  @IsString()
+  type?: string;
+
+  @IsOptional()
+  @IsNumber()
+  money?: number;
+
+  @IsOptional()
+  @IsNumber()
+  totalFreeze?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  status?: boolean;
+}

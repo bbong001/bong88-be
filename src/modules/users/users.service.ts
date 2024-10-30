@@ -82,12 +82,22 @@ export class UsersService {
       });
       const savedUser = await newUser.save();
 
-      return savedUser;
+      // Tạo ví cho người dùng mới
+      const newWallet = new this.walletsModel({
+        userId: savedUser._id,
+        username: savedUser.username,
+        money: walletBalance || 0, // Đặt số dư ví ban đầu
+        status: false, // Trạng thái mặc định
+      });
+  
+      await newWallet.save(); // Lưu ví
+  
+      return savedUser; 
+
     } catch (error) {
       throw error;
     }
   }
-
   async findAll(userId: string, paginationOptions: { page: number; limit: number }): Promise<PaginationResult<User>> {
     try {
       const { page, limit } = paginationOptions;
