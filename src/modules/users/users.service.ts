@@ -9,6 +9,8 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, Types } from 'mongoose';
 import { User } from './schemas/user.schema';
+import { Wallet } from '../wallets/schemas/wallet.schema';
+
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { hashMD5, hashPassword } from '@/shared/utils/hash.util';
@@ -25,12 +27,14 @@ export class UsersService {
 
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Wallet.name) private walletModel: Model<Wallet>, // Tiêm mô hình Wallet
     private readonly gsService: GSService,
     private readonly configService: ConfigService,
   ) {
     this.gsOperatorCode = configService.getGSOperatorCode();
     this.gsSecretKey = configService.getGSSecretKey();
   }
+  
 
   async createUser(user: any, createUserDto: CreateUserDto): Promise<User> {
     try {
@@ -77,8 +81,20 @@ export class UsersService {
         role: _role,
         parentId: user.id,
       });
+      const savedUser = await newUser.save();
 
-      return await newUser.save();
+      // Tạo ví cho người dùng mới
+      const newWallet = new this.walletModel({
+        userId: savedUser._id,
+        username: savedUser.username,
+        money: walletBalance || 0, // Đặt số dư ví ban đầu
+        status: false, // Trạng thái mặc định
+      });
+  
+      await newWallet.save(); // Lưu ví
+  
+      return savedUser; 
+
     } catch (error) {
       throw error;
     }

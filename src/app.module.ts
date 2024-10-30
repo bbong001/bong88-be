@@ -12,6 +12,7 @@ import { GSModule } from './common/services/gs/gs.module';
 import { RedisModule } from './common/services/redis/redis.module';
 import { RolesGuard } from './common/guards/roles.guard';
 import { GamesModule } from './modules/games/games.module';
+import { WalletsModule } from './modules/wallets/wallets.module'; 
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { GamesModule } from './modules/games/games.module';
     AuthModule,
     GSModule,
     GamesModule,
+    WalletsModule
   ],
   controllers: [AppController],
   providers: [

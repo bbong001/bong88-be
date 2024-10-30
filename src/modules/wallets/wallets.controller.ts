@@ -8,10 +8,10 @@ import { Wallet } from './schemas/wallet.schema';
 export class WalletsController {
   constructor(private readonly walletsService: WalletsService) {}
 
-  // @Post()
-  // async create(@Body() createWalletDto: CreateWalletDto): Promise<Wallet> {
-  //   return await this.walletsService.create(createWalletDto);
-  // }
+  @Post()
+  async create(@Body() createWalletDto: CreateWalletDto): Promise<Wallet> {
+    return await this.walletsService.create(createWalletDto);
+  }
 
   @Get()
   async findAll(): Promise<Wallet[]> {
