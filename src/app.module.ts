@@ -12,6 +12,8 @@ import { GSModule } from './common/services/gs/gs.module';
 import { RedisModule } from './common/services/redis/redis.module';
 import { RolesGuard } from './common/guards/roles.guard';
 import { GamesModule } from './modules/games/games.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TasksModule } from './common/tasks/tasks.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { GamesModule } from './modules/games/games.module';
         uri: configService.getMongoDbUrl(),
       }),
     }),
+    ScheduleModule.forRoot(),
+    TasksModule,
     RedisModule,
     UsersModule,
     AuthModule,
