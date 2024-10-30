@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -36,9 +36,7 @@ export class UsersService {
     try {
       const { fullName, username, email, password, mobile, walletBalance, role } = createUserDto;
 
-      if (role < user.role) {
-        throw new ConflictException('Không thể tạo tài khoản có quyền lớn hơn tài khoản của bạn');
-      }
+      if (role < user.role) throw new ConflictException('Không thể tạo tài khoản có quyền lớn hơn tài khoản của bạn');
 
       // Tạo người chơi trên GS
       if (role === ROLES.PLAYER || user.role === ROLES.AGENT) {
@@ -67,9 +65,7 @@ export class UsersService {
 
       const _role = role ? role : Number(user.role) + 1;
 
-      if (!_role) {
-        throw new ConflictException('Vai trò người dùng không hợp lệ');
-      }
+      if (!_role) throw new ConflictException('Vai trò người dùng không hợp lệ');
 
       const newUser = new this.userModel({
         username,
@@ -89,88 +85,87 @@ export class UsersService {
   }
 
   async findAll(userId: string, paginationOptions: { page: number; limit: number }): Promise<PaginationResult<User>> {
-    const { page, limit } = paginationOptions;
-    const skip = (page - 1) * limit;
-    const [results, total] = await Promise.all([
-      this.userModel.find({ parentId: userId }).skip(skip).limit(limit).exec(),
-      this.userModel.countDocuments({ parentId: userId }).exec(),
-    ]);
+    try {
+      const { page, limit } = paginationOptions;
+      const skip = (page - 1) * limit;
+      const [results, total] = await Promise.all([
+        this.userModel.find({ parentId: userId }).skip(skip).limit(limit).exec(),
+        this.userModel.countDocuments({ parentId: userId }).exec(),
+      ]);
 
-    const totalPages = Math.ceil(total / limit);
+      const totalPages = Math.ceil(total / limit);
 
-    return {
-      results,
-      total,
-      page,
-      limit,
-      totalPages,
-    };
+      return {
+        results,
+        total,
+        page,
+        limit,
+        totalPages,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findById(user: any, id: string): Promise<User> {
-    if (!mongoose.isValidObjectId(id)) {
-      throw new BadRequestException(`${id} không đúng định dạng Mongodb`);
-    }
+    if (!mongoose.isValidObjectId(id)) throw new BadRequestException(`${id} không đúng định dạng Mongodb`);
 
     const _user = await this.userModel.findById(id).exec();
-    if (!_user) {
-      throw new NotFoundException(`User with id ${id} not found`);
-    }
+    if (!_user) throw new NotFoundException(`User with id ${id} not found`);
 
-    if (user.role < _user.role) {
-      throw new ForbiddenException(`User with role ${user.role} not permissions`);
-    }
+    if (user.role < _user.role) throw new ForbiddenException(`User with role ${user.role} not permissions`);
 
     return _user;
   }
 
-  async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    if (!mongoose.isValidObjectId(id)) {
-      throw new BadRequestException(`${id} không đúng định dạng Mongodb`);
-    }
+  async updateUser(id: string, updateUserDto: UpdateUserDto, currentUser: any): Promise<User> {
+    try {
+      if (!mongoose.isValidObjectId(id)) throw new BadRequestException(`${id} không đúng định dạng Mongodb`);
 
-    const { name, email, password } = updateUserDto;
-    const updateData: UpdateUserDto = { name, email };
+      const { fullName, email, password, mobile, walletBalance, accountStatus, role } = updateUserDto;
+      const updateData: UpdateUserDto = { fullName, email, password, mobile, walletBalance, accountStatus, role };
 
-    // Nếu có password, hash nó và thêm vào đối tượng cập nhật
-    if (password) {
-      const hashedPassword = await hashPassword(password);
-      if (hashedPassword) {
-        updateData.password = hashedPassword;
+      const isCurrentUserCanAction = await this.checkCurrentUserCanAction(id, currentUser.id);
+      if (!isCurrentUserCanAction) throw new ForbiddenException(`Không thể sửa người dùng không thuộc phạm vi quản lý`);
+
+      if (password) {
+        // Nếu có password, hash nó và thêm vào đối tượng cập nhật
+        const hashedPassword = await hashPassword(password);
+        if (hashedPassword) updateData.password = hashedPassword;
       }
-    }
 
-    // Cập nhật user
-    const user = await this.userModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
+      if (role && role <= currentUser.role)
+        throw new ConflictException('Role không thể cao hơn hoặc bằng người chỉ định');
 
-    if (!user) {
-      throw new NotFoundException(`User with id ${id} not found`);
-    }
-    return user;
-  }
+      // Cập nhật user
+      const user = await this.userModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
 
-  async deleteUser(id: string): Promise<void> {
-    const result = await this.userModel.findByIdAndDelete(id).exec();
-    if (!result) {
-      throw new NotFoundException(`User with id ${id} not found`);
+      if (!user) throw new NotFoundException(`User with id ${id} not found`);
+
+      return user;
+    } catch (error) {
+      throw error;
     }
   }
 
   async findByEmail(email: string): Promise<User> {
     const user = await this.userModel.findOne({ email }).exec();
-    if (!user) {
-      throw new NotFoundException(`User with email ${email} not found`);
-    }
+    if (!user) throw new NotFoundException(`User with email ${email} not found`);
 
     return user;
   }
 
   async findByUsername(username: string): Promise<User> {
     const user = await this.userModel.findOne({ username }).exec();
-    if (!user) {
-      throw new NotFoundException(`User with email ${username} not found`);
-    }
+    if (!user) throw new NotFoundException(`User with email ${username} not found`);
 
     return user;
+  }
+
+  async checkCurrentUserCanAction(userId: string, currentUserId: Types.ObjectId): Promise<boolean> {
+    const userUpdate = await this.userModel.findById(userId).exec();
+    if (!userUpdate) throw new NotFoundException(`User with id ${userId} not found`);
+    if (userUpdate.parentId !== currentUserId) return false;
+    return true;
   }
 }

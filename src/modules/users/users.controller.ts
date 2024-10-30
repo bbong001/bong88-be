@@ -55,17 +55,19 @@ export class UsersController {
   @ApiOperation({ summary: 'Chi tiết một người dùng' })
   @ApiResponse({ status: 200, description: 'Thành công' })
   @Roles(ROLES.ADMIN, ROLES.SUPER, ROLES.MASTER, ROLES.AGENT)
-  async getUserById(@CurrentUser() user: any, @Param('id') id: string): Promise<User> {
-    return this.usersService.findById(user, id);
+  async getUserById(@CurrentUser() currentUser: any, @Param('id') id: string): Promise<User> {
+    return this.usersService.findById(currentUser, id);
   }
 
   @Patch(':id')
-  async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<User> {
-    return this.usersService.updateUser(id, updateUserDto);
-  }
-
-  @Delete(':id')
-  async deleteUser(@Param('id') id: string): Promise<void> {
-    return this.usersService.deleteUser(id);
+  @ApiOperation({ summary: 'Cập nhật thông tin người dùng' })
+  @ApiResponse({ status: 200, description: 'Thành công' })
+  @Roles(ROLES.ADMIN, ROLES.SUPER, ROLES.MASTER, ROLES.AGENT)
+  async updateUser(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @CurrentUser() currentUser: any,
+  ): Promise<User> {
+    return this.usersService.updateUser(id, updateUserDto, currentUser);
   }
 }
