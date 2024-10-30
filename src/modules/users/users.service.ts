@@ -86,8 +86,8 @@ export class UsersService {
       const newWallet = new this.walletsModel({
         userId: savedUser._id,
         username: savedUser.username,
-        money: walletBalance || 0, // Đặt số dư ví ban đầu
-        status: false, // Trạng thái mặc định
+        balance: walletBalance || 0, // Đặt số dư ví ban đầu
+        // Trạng thái mặc định
       });
   
       await newWallet.save(); // Lưu ví
