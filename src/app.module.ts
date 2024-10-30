@@ -12,6 +12,7 @@ import { GSModule } from './common/services/gs/gs.module';
 import { RedisModule } from './common/services/redis/redis.module';
 import { RolesGuard } from './common/guards/roles.guard';
 import { GamesModule } from './modules/games/games.module';
+import { WalletsModule } from './modules/wallets/wallets.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TasksModule } from './common/tasks/tasks.module';
 
@@ -32,6 +33,7 @@ import { TasksModule } from './common/tasks/tasks.module';
     AuthModule,
     GSModule,
     GamesModule,
+    WalletsModule,
   ],
   controllers: [AppController],
   providers: [

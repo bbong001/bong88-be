@@ -17,6 +17,7 @@ import { ConfigService } from '@/config/config.service';
 import { GSErrorCodes } from '@/shared/constants/gs-error.constants';
 import { ROLES } from '@/shared/constants/role.constant';
 import { PaginationResult } from '@/common/interfaces/pagination-result.interface';
+import { Wallet } from '../wallets/schemas/wallets.schema';
 
 @Injectable()
 export class UsersService {
@@ -25,6 +26,8 @@ export class UsersService {
 
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Wallet.name) private walletsModel: Model<Wallet>,
+
     private readonly gsService: GSService,
     private readonly configService: ConfigService,
   ) {
@@ -77,8 +80,9 @@ export class UsersService {
         role: _role,
         parentId: user.id,
       });
+      const savedUser = await newUser.save();
 
-      return await newUser.save();
+      return savedUser;
     } catch (error) {
       throw error;
     }

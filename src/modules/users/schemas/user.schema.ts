@@ -26,8 +26,7 @@ export class User extends Document {
   @Prop({ default: null })
   avt?: string;
 
-  @Prop({ default: 0 })
-  walletBalance?: number;
+
 
   @Prop({ default: null })
   lastLoginAt: Date;
