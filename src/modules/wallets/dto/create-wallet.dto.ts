@@ -6,18 +6,11 @@ export class CreateWalletDto {
   @IsNotEmpty()
   username: string;
 
-  @IsString()
-  thongBao?: string;
-
-  @IsNotEmpty()
-  type: string;
-
   @IsNumber()
-  money?: number;
+  balance?: number;
 
   @IsNumber()
   totalFreeze?: number;
 
-  @IsNotEmpty()
-  status?: boolean;
+  
 }
