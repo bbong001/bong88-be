@@ -17,6 +17,7 @@ import { Public } from '@/common/decorators/public.decorator';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { LogoutDto } from './dto/logout.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -47,5 +48,22 @@ export class AuthController {
     const { refreshToken } = body;
     const tokens = await this.authService.refreshToken(refreshToken);
     return tokens;
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('logout')
+  @ApiOperation({ summary: 'Đăng xuất' })
+  @ApiResponse({ status: 200, description: 'Thành công' })
+  async logout(@Body() body: RefreshTokenDto, @Request() req) {
+    const { refreshToken } = body;
+
+    const authHeader = req.headers['authorization'];
+    const accessToken = authHeader?.split(' ')[1];
+
+    if (!accessToken) {
+      throw new Error('Access token not found in header');
+    }
+
+    await this.authService.logout(accessToken, refreshToken);
   }
 }

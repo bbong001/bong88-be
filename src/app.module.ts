@@ -11,6 +11,10 @@ import { JwtAuthGuard } from './modules/auth/passport/jwt-auth.guard';
 import { GSModule } from './common/services/gs/gs.module';
 import { RedisModule } from './common/services/redis/redis.module';
 import { RolesGuard } from './common/guards/roles.guard';
+import { GamesModule } from './modules/games/games.module';
+import { WalletsModule } from './modules/wallets/wallets.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TasksModule } from './common/tasks/tasks.module';
 
 @Module({
   imports: [
@@ -22,10 +26,14 @@ import { RolesGuard } from './common/guards/roles.guard';
         uri: configService.getMongoDbUrl(),
       }),
     }),
+    ScheduleModule.forRoot(),
+    TasksModule,
     RedisModule,
     UsersModule,
     AuthModule,
     GSModule,
+    GamesModule,
+    WalletsModule,
   ],
   controllers: [AppController],
   providers: [

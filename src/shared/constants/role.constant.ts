@@ -1,12 +1,7 @@
 export enum ROLES {
-  // ADMIN = 'ADMIN',
-  // SUPER = 'SUPER',
-  // MASTER = 'MASTER',
-  // AGENT = 'AGENT',
-  // PLAYER = 'PLAYER',
-  ADMIN = 1,
-  SUPER = 2,
-  MASTER = 3,
-  AGENT = 4,
-  PLAYER = 5,
+  ADMIN = 1, // ADMIN = 'ADMIN'
+  SUPER = 2, // SUPER = 'SUPER'
+  MASTER = 3, // MASTER = 'MASTER'
+  AGENT = 4, // AGENT = 'AGENT'
+  PLAYER = 5, // PLAYER = 'PLAYER'
 }

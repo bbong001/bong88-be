@@ -8,6 +8,7 @@ import { ConfigModule } from '@/config/config.module';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './passport/local.strategy';
 import { JwtStrategy } from './passport/jwt.strategy';
+import { WalletsModule } from '../wallets/wallets.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { JwtStrategy } from './passport/jwt.strategy';
       inject: [ConfigService],
     }),
     PassportModule,
+    WalletsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
