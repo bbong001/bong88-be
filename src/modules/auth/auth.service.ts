@@ -10,11 +10,13 @@ import { generateRefreshToken } from '@/shared/utils/token.util';
 import { REDIS_KEY } from '@/shared/constants/redis-key.constant';
 import dayjs from '@/shared/utils/dayjs.util';
 import { UnauthorizedErrorCode } from '@/shared/constants/error-code.constants';
+import { WalletsService } from '../wallets/wallets.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
+    private walletsService: WalletsService,
     private jwtService: JwtService,
     private configService: ConfigService,
     private redisService: RedisService,
@@ -50,14 +52,14 @@ export class AuthService {
       // const refreshTokenExpiredAt = new Date(Date.now() + refreshTokenTTL * 1000).toISOString();
 
       const userInfo = await this.usersService.findByUsername(user.username);
-
+      const wallets = await this.walletsService.findByUsername(user.username);
       return {
         tokenInfos: {
           accessToken,
           refreshToken,
         },
         userInfos: userInfo,
-
+        wallets,
         // accessTokenExpiredAt: accessTokenExpiredAt,
         // refreshTokenExpiredAt: refreshTokenExpiredAt,
       };

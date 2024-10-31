@@ -1,14 +1,18 @@
-import { IsOptional, IsString, IsNumber, IsBoolean } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsNumber } from 'class-validator';
 
 export class UpdateWalletDto {
-  @IsOptional()
-  @IsString()
-  username: string;
-
-
-  @IsOptional()
+  @ApiProperty({
+    example: 0,
+    required: false,
+  })
   @IsNumber()
   balance?: number;
 
-
+  @ApiProperty({
+    example: 0,
+    required: false,
+  })
+  @IsOptional()
+  status?: number;
 }

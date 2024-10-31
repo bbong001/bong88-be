@@ -35,13 +35,6 @@ export class UpdateUserDto {
   })
   @IsOptional()
   @IsNumber()
-  walletBalance?: number;
-
-  @ApiProperty({
-    example: 0,
-  })
-  @IsOptional()
-  @IsNumber()
   accountStatus?: number;
 
   @ApiProperty({

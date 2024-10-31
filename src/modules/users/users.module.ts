@@ -8,6 +8,7 @@ import { HttpModule } from '@/common/services/http/http.module';
 import { ConfigModule } from '@/config/config.module';
 import { AdminInitializerService } from './admin-initializer.service';
 import { WalletsModule } from '../wallets/wallets.module';
+import { WalletsService } from '../wallets/wallets.service';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { WalletsModule } from '../wallets/wallets.module';
     WalletsModule,
   ],
   controllers: [UsersController],
-  providers: [UsersService, GSService, AdminInitializerService],
+  providers: [UsersService, GSService, WalletsService, AdminInitializerService],
   exports: [UsersService],
 })
 export class UsersModule {}

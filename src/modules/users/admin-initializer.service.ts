@@ -5,6 +5,7 @@ import { User } from './schemas/user.schema';
 import { ROLES } from '@/shared/constants/role.constant';
 import { ConfigService } from '@/config/config.service';
 import { hashPassword } from '@/shared/utils/hash.util';
+import { Wallet } from '../wallets/schemas/wallets.schema';
 
 @Injectable()
 export class AdminInitializerService implements OnApplicationBootstrap {
@@ -12,6 +13,7 @@ export class AdminInitializerService implements OnApplicationBootstrap {
 
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Wallet.name) private walletsModel: Model<Wallet>,
     private readonly configService: ConfigService,
   ) {}
 
@@ -33,11 +35,20 @@ export class AdminInitializerService implements OnApplicationBootstrap {
         fullName: 'Administrator',
         email: 'admin@example.com',
         role: ROLES.ADMIN,
-        parentId: null, // ADMIN không có parent
+        parentId: null,
       });
 
       await adminUser.save();
       this.logger.log('Default admin user created.');
+      // Tạo ví cho người dùng mới
+      const newWallet = new this.walletsModel({
+        userId: adminUser._id,
+        username: adminUser.username,
+        balance: 0,
+      });
+
+      await newWallet.save();
+      this.logger.log('Default admin wallet created.');
     } else {
       this.logger.log('Admin user already exists.');
     }

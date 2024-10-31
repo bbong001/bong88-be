@@ -8,7 +8,14 @@ import { UsersModule } from '../users/users.module';
 import { User, UserSchema } from '../users/schemas/user.schema';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Wallet.name, schema: WalletSchema }, { name: User.name, schema: UserSchema }]), ConfigModule,forwardRef(() => UsersModule)],
+  imports: [
+    MongooseModule.forFeature([
+      { name: Wallet.name, schema: WalletSchema },
+      { name: User.name, schema: UserSchema },
+    ]),
+    ConfigModule,
+    forwardRef(() => UsersModule),
+  ],
   controllers: [WalletsController],
   providers: [WalletsService],
   exports: [WalletsService, MongooseModule],

@@ -6,8 +6,8 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model, Types } from 'mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import mongoose, { Connection, Model, Types } from 'mongoose';
 import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -18,6 +18,8 @@ import { GSErrorCodes } from '@/shared/constants/gs-error.constants';
 import { ROLES } from '@/shared/constants/role.constant';
 import { PaginationResult } from '@/common/interfaces/pagination-result.interface';
 import { Wallet } from '../wallets/schemas/wallets.schema';
+import { WalletsService } from '../wallets/wallets.service';
+import { WALLET_TYPE } from '@/shared/constants/wallet.constant';
 
 @Injectable()
 export class UsersService {
@@ -26,78 +28,71 @@ export class UsersService {
 
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel(Wallet.name) private walletsModel: Model<Wallet>,
+    @InjectConnection() private readonly connection: Connection,
 
-    private readonly gsService: GSService,
     private readonly configService: ConfigService,
+    private readonly gsService: GSService,
+    private readonly walletsService: WalletsService,
   ) {
     this.gsOperatorCode = configService.getGSOperatorCode();
     this.gsSecretKey = configService.getGSSecretKey();
   }
 
-  async createUser(user: any, createUserDto: CreateUserDto): Promise<User> {
+  async createUser(currentUser: any, createUserDto: CreateUserDto): Promise<any> {
     try {
       const { fullName, username, email, password, mobile, walletBalance, role } = createUserDto;
 
-      if (role < user.role) throw new ConflictException('Không thể tạo tài khoản có quyền lớn hơn tài khoản của bạn');
-
-      // Tạo người chơi trên GS
-      if (role === ROLES.PLAYER || user.role === ROLES.AGENT) {
-        const resGS = await this.gsService.createPlayer({
-          operatorcode: this.gsOperatorCode,
-          username: username.toLowerCase(),
-          signature: hashMD5(`${this.gsOperatorCode}${username.toLowerCase()}${this.gsSecretKey}`).toUpperCase(),
-        });
-
-        if (resGS.errCode !== GSErrorCodes.SUCCESS.code) throw new BadRequestException(resGS.errMsg);
+      // Kiểm tra vai trò người dùng hợp lệ
+      if (role < currentUser.role) {
+        throw new ConflictException('Không thể tạo tài khoản có quyền lớn hơn tài khoản của bạn');
       }
 
-      // Kiểm tra sự tồn tại của username hoặc email trong cùng một truy vấn
-      const existingUser = await this.userModel.findOne({
-        $or: [{ username }, { email }],
-      });
+      // Kiểm tra sự tồn tại của username hoặc email
+      await this.checkUserExistence(username, email);
 
-      if (existingUser) {
-        if (existingUser.username === username) {
-          throw new ConflictException('Tên đăng nhập đã tồn tại');
-        }
-      }
-
-      // Hash password và tạo user mới
+      // Hash password
       const hashedPassword = await hashPassword(password);
 
-      const _role = role ? role : Number(user.role) + 1;
-
+      // Xác định vai trò người dùng mới
+      const _role = role || currentUser.role + 1;
       if (!_role) throw new ConflictException('Vai trò người dùng không hợp lệ');
 
+      // Tạo người chơi trên GS (nếu cần)
+      if (role === ROLES.PLAYER || currentUser.role === ROLES.AGENT) {
+        await this.createGSPlayer(username);
+      }
+
+      // Tạo user mới và lưu vào database
       const newUser = new this.userModel({
         username,
         fullName,
         email,
         password: hashedPassword,
         mobile,
-        walletBalance,
         role: _role,
-        parentId: user.id,
+        parentId: currentUser.id,
       });
       const savedUser = await newUser.save();
 
-      // Tạo ví cho người dùng mới
-      const newWallet = new this.walletsModel({
-        userId: savedUser._id,
-        username: savedUser.username,
-        balance: walletBalance || 0, // Đặt số dư ví ban đầu
-        // Trạng thái mặc định
+      // Tạo wallet cho user mới
+      const walletCurrentUser = await this.walletsService.findByUsername(currentUser.username);
+      const newWallet = await this.walletsService.createWallet({
+        userId: savedUser._id as Types.ObjectId,
+        username: username,
+        wallet: WALLET_TYPE.MAIN,
+        balance: walletBalance,
+        parentWalletId: walletCurrentUser._id as Types.ObjectId,
       });
-  
-      await newWallet.save(); // Lưu ví
-  
-      return savedUser; 
 
+      return {
+        user: savedUser,
+        wallet: newWallet,
+      };
     } catch (error) {
       throw error;
     }
   }
+
   async findAll(userId: string, paginationOptions: { page: number; limit: number }): Promise<PaginationResult<User>> {
     try {
       const { page, limit } = paginationOptions;
@@ -136,8 +131,8 @@ export class UsersService {
     try {
       if (!mongoose.isValidObjectId(id)) throw new BadRequestException(`${id} không đúng định dạng Mongodb`);
 
-      const { fullName, email, password, mobile, walletBalance, accountStatus, role } = updateUserDto;
-      const updateData: UpdateUserDto = { fullName, email, password, mobile, walletBalance, accountStatus, role };
+      const { fullName, email, password, mobile, accountStatus, role } = updateUserDto;
+      const updateData: UpdateUserDto = { fullName, email, password, mobile, accountStatus, role };
 
       const isCurrentUserCanAction = await this.checkCurrentUserCanAction(id, currentUser.id);
       if (!isCurrentUserCanAction) throw new ForbiddenException(`Không thể sửa người dùng không thuộc phạm vi quản lý`);
@@ -162,6 +157,13 @@ export class UsersService {
     }
   }
 
+  async findByUserId(id: string): Promise<User> {
+    const user = await this.userModel.findById(id).exec();
+    if (!user) throw new NotFoundException(`User with id ${id} not found`);
+
+    return user;
+  }
+
   async findByEmail(email: string): Promise<User> {
     const user = await this.userModel.findOne({ email }).exec();
     if (!user) throw new NotFoundException(`User with email ${email} not found`);
@@ -181,5 +183,35 @@ export class UsersService {
     if (!userUpdate) throw new NotFoundException(`User with id ${userId} not found`);
     if (userUpdate.parentId !== currentUserId) return false;
     return true;
+  }
+
+  // Hàm kiểm tra sự tồn tại của user
+  private async checkUserExistence(username: string, email: string): Promise<void> {
+    const existingUser = await this.userModel.findOne({
+      $or: [{ username }, { email }],
+    });
+    if (existingUser) {
+      if (existingUser.username === username) {
+        throw new ConflictException('Tên đăng nhập đã tồn tại');
+      } else if (existingUser.email === email) {
+        throw new ConflictException('Email đã tồn tại');
+      }
+    }
+  }
+
+  async findByIdAndDelete(id: string) {
+    await this.userModel.findByIdAndDelete(id);
+  }
+
+  // Hàm tạo người chơi trên hệ thống GS
+  private async createGSPlayer(username: string): Promise<void> {
+    const resGS = await this.gsService.createPlayer({
+      operatorcode: this.gsOperatorCode,
+      username: username.toLowerCase(),
+      signature: hashMD5(`${this.gsOperatorCode}${username.toLowerCase()}${this.gsSecretKey}`).toUpperCase(),
+    });
+    if (resGS.errCode !== GSErrorCodes.SUCCESS.code) {
+      throw new BadRequestException(resGS.errMsg);
+    }
   }
 }
