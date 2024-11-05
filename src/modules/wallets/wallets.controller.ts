@@ -13,6 +13,14 @@ import { CurrentUser } from '@/common/decorators/current-user.decorators';
 export class WalletsController {
   constructor(private readonly walletsService: WalletsService) {}
 
+  // @Post()
+  // @ApiOperation({ summary: 'Tạo ví mới' }) // Changed summary to reflect wallet creation
+  // @ApiResponse({ status: 201, description: 'Ví đã được tạo thành công' }) // Status for creation is typically 201
+  // async createWallet(@Body() createWalletDto: CreateWalletDto): Promise<Wallet> {
+  //   return await this.walletsService.createWallet(createWalletDto); // Assuming you have a create method in your service
+  // }
+  
+
   @Get(':id')
   @ApiOperation({ summary: 'Chi tiết ví' })
   @ApiResponse({ status: 200, description: 'Thành công' })

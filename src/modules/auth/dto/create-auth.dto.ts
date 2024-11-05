@@ -16,4 +16,11 @@ export class CreateAuthDto {
   })
   @IsNotEmpty({ message: 'Mật khẩu không được để trống.' })
   password: string;
+
+  // @ApiProperty({
+  //   example: 'string',
+  //   required: true,
+  // })
+  // @IsNotEmpty({ message: 'Truyền ip về' })
+  // ip: string;
 }

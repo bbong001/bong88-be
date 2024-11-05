@@ -76,6 +76,7 @@ export class UsersService {
 
       // Tạo wallet cho user mới
       const walletCurrentUser = await this.walletsService.findByUsername(currentUser.username);
+      
       const newWallet = await this.walletsService.createWallet({
         userId: savedUser._id as Types.ObjectId,
         username: username,
@@ -172,8 +173,16 @@ export class UsersService {
   }
 
   async findByUsername(username: string): Promise<User> {
-    const user = await this.userModel.findOne({ username }).exec();
-    if (!user) throw new NotFoundException(`User with email ${username} not found`);
+    const user = await this.userModel.findOne({ username: username }).exec();
+    console.log("user",user);
+    if (!user) throw new NotFoundException(`User with username ${username} not found`);
+
+    return user;
+  }
+  async findAndUpdateIp(username: string, ip:string): Promise<User> {
+    const user = await this.userModel.findOneAndUpdate({ username: username },{ip:ip}).exec();
+    console.log("user",user);
+    if (!user) throw new NotFoundException(`User with username ${username} not found`);
 
     return user;
   }

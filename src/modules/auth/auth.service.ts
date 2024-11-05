@@ -20,7 +20,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private redisService: RedisService,
-  ) {}
+  ) { }
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findByUsername(username);
@@ -38,7 +38,7 @@ export class AuthService {
 
   async login(user: any): Promise<any> {
     try {
-      const payload = { sub: user._id, username: user.username, role: user.role };
+      const payload = { sub: user._id, username: user.username, role: user.role, ip: user.ip };
       const accessToken = this.jwtService.sign(payload);
       const refreshToken = generateRefreshToken();
 
@@ -52,7 +52,10 @@ export class AuthService {
       // const refreshTokenExpiredAt = new Date(Date.now() + refreshTokenTTL * 1000).toISOString();
 
       const userInfo = await this.usersService.findByUsername(user.username);
+
       const wallets = await this.walletsService.findByUsername(user.username);
+      await this.usersService.findAndUpdateIp(user.username, user.ip);
+
       return {
         tokenInfos: {
           accessToken,
