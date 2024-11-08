@@ -51,6 +51,23 @@ export class UsersController {
     return this.usersService.findAll(user.id, { page, limit });
   }
 
+  @Get(':parentId')
+  @ApiOperation({ summary: 'Danh sách người dùng theo id cha theo bộ lọc' })
+  @ApiResponse({ status: 200, description: 'Thành công' })
+  @Roles(ROLES.ADMIN, ROLES.SUPER, ROLES.MASTER, ROLES.AGENT)
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Trang hiện tại' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Số lượng bản ghi trên mỗi trang' })
+  async getAllUsersByParentId(
+      @CurrentUser() user: any,
+      @Query(new ValidationPipe({ transform: true })) paginationQuery: PaginationQueryDto,
+      @Param('parentId', new ValidationPipe({ transform: true })) parentId: string, // Lấy parentId từ đường dẫn
+  ): Promise<PaginationResult<User>> {
+      const { page, limit } = paginationQuery; // Chỉ lấy page và limit từ paginationQuery
+      return this.usersService.findAll(parentId, { page, limit });
+  }
+  
+  
+
   @Get(':id')
   @ApiOperation({ summary: 'Chi tiết một người dùng' })
   @ApiResponse({ status: 200, description: 'Thành công' })

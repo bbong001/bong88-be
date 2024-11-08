@@ -43,6 +43,9 @@ export class UsersService {
       const { fullName, username, email, password, mobile, walletBalance, role } = createUserDto;
 
       // Kiểm tra vai trò người dùng hợp lệ
+      if(1 >role ||role>5){
+        throw new ConflictException('Role không hợp lệ');
+      }
       if (role < currentUser.role) {
         throw new ConflictException('Không thể tạo tài khoản có quyền lớn hơn tài khoản của bạn');
       }
@@ -61,6 +64,11 @@ export class UsersService {
       if (role === ROLES.PLAYER || currentUser.role === ROLES.AGENT) {
         await this.createGSPlayer(username);
       }
+      const walletCurrentUser = await this.walletsService.findByUsername(currentUser.username);
+      //kiểm tra ví cha còn đủ tiền không 
+      if(walletCurrentUser.balance <walletBalance){
+        throw new ConflictException('Tài khoản không đủ để tạo tài khoản con');
+      }
 
       // Tạo user mới và lưu vào database
       const newUser = new this.userModel({
@@ -75,8 +83,7 @@ export class UsersService {
       const savedUser = await newUser.save();
 
       // Tạo wallet cho user mới
-      const walletCurrentUser = await this.walletsService.findByUsername(currentUser.username);
-      
+
       const newWallet = await this.walletsService.createWallet({
         userId: savedUser._id as Types.ObjectId,
         username: username,
