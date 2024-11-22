@@ -17,7 +17,7 @@ export class WalletsService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(Wallet.name) private walletModel: Model<Wallet>,
-  ) {}
+  ) { }
 
   async createWallet(createWalletDto: CreateWalletDto): Promise<Wallet> {
     const { userId, username, wallet, balance, parentWalletId } = createWalletDto;
@@ -38,6 +38,11 @@ export class WalletsService {
       if (walletParent.balance < balance) {
         throw new BadRequestException(`Số dư của ${walletParent.username} không đủ`);
       }
+      const balanceParent = walletParent.balance - balance
+      await this.walletModel.findByIdAndUpdate(parentWalletId, {
+        balance: balanceParent
+      }, { new: true });
+
       // Tạo ví mới
       const newWallet = new this.walletModel({ userId, username, wallet, balance, parentWalletId });
       const _newWallet = await newWallet.save();
@@ -92,10 +97,10 @@ export class WalletsService {
     }
   }
 
-  async findByUsername(username: string): Promise<Wallet> {
+  async findByUsername(userId: Object): Promise<Wallet> {
     try {
-      const wallet = await this.walletModel.findOne({ username }).exec();
-      if (!wallet) throw new NotFoundException(`Ví của ${username} không tồn tại`);
+      const wallet = await this.walletModel.findOne({ userId: userId }).exec();
+      if (!wallet) throw new NotFoundException(`Ví không tồn tại`);
       return wallet;
     } catch (error) {
       throw error;

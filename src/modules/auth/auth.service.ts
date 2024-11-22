@@ -53,7 +53,7 @@ export class AuthService {
 
       const userInfo = await this.usersService.findByUsername(user.username);
 
-      const wallets = await this.walletsService.findByUsername(user.username);
+      const wallets = await this.walletsService.findByUsername(userInfo._id);
       await this.usersService.findAndUpdateIp(user.username, user.ip);
 
       return {

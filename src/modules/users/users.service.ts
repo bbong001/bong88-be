@@ -43,7 +43,7 @@ export class UsersService {
       const { fullName, username, email, password, mobile, walletBalance, role } = createUserDto;
 
       // Kiểm tra vai trò người dùng hợp lệ
-      if(1 >role ||role>5){
+      if (1 > role || role > 5) {
         throw new ConflictException('Role không hợp lệ');
       }
       if (role < currentUser.role) {
@@ -66,7 +66,7 @@ export class UsersService {
       }
       const walletCurrentUser = await this.walletsService.findByUsername(currentUser.username);
       //kiểm tra ví cha còn đủ tiền không 
-      if(walletCurrentUser.balance <walletBalance){
+      if (walletCurrentUser.balance < walletBalance) {
         throw new ConflictException('Tài khoản không đủ để tạo tài khoản con');
       }
 
@@ -91,7 +91,6 @@ export class UsersService {
         balance: walletBalance,
         parentWalletId: walletCurrentUser._id as Types.ObjectId,
       });
-
       return {
         user: savedUser,
         wallet: newWallet,
@@ -181,14 +180,14 @@ export class UsersService {
 
   async findByUsername(username: string): Promise<User> {
     const user = await this.userModel.findOne({ username: username }).exec();
-    console.log("user",user);
+    console.log("user", user);
     if (!user) throw new NotFoundException(`User with username ${username} not found`);
 
     return user;
   }
-  async findAndUpdateIp(username: string, ip:string): Promise<User> {
-    const user = await this.userModel.findOneAndUpdate({ username: username },{ip:ip}).exec();
-    console.log("user",user);
+  async findAndUpdateIp(username: string, ip: string): Promise<User> {
+    const user = await this.userModel.findOneAndUpdate({ username: username }, { ip: ip }).exec();
+    console.log("user", user);
     if (!user) throw new NotFoundException(`User with username ${username} not found`);
 
     return user;
